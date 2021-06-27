@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func info(app *cli.App, api *opnsense.Api) *cli.Command {
+func showInfo(app *cli.App, api *opnsense.Api) *cli.Command {
 	return &cli.Command{
 		Name:  "info",
 		Usage: "show firmware info",
@@ -37,7 +37,7 @@ func info(app *cli.App, api *opnsense.Api) *cli.Command {
 	}
 }
 
-func status(app *cli.App, api *opnsense.Api) *cli.Command {
+func showStatus(app *cli.App, api *opnsense.Api) *cli.Command {
 	return &cli.Command{
 		Name:  "status",
 		Usage: "show firmware status",
@@ -78,8 +78,8 @@ func showCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands,
-		info(app, api),
-		status(app, api),
+		showInfo(app, api),
+		showStatus(app, api),
 	)
 
 	return commands

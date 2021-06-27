@@ -7,6 +7,7 @@ import (
 
 	"github.com/chopnico/opnsense"
 
+	"github.com/chopnico/opnsense/internal/cli/diagnostics"
 	"github.com/chopnico/opnsense/internal/cli/firmware"
 
 	"github.com/urfave/cli/v2"
@@ -92,6 +93,7 @@ func main() {
 	}
 
 	firmware.NewCommand(app, &api)
+	diagnostics.NewCommand(app, &api)
 
 	err := app.Run(os.Args)
 	if err != nil {
