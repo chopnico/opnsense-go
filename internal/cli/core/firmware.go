@@ -1,4 +1,4 @@
-package firmware
+package core
 
 import (
 	"github.com/chopnico/opnsense"
@@ -7,12 +7,12 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func showInfo(app *cli.App, api *opnsense.Api) *cli.Command {
+func firmwareInfo(app *cli.App, api *opnsense.Api) *cli.Command {
 	return &cli.Command{
 		Name:  "info",
 		Usage: "show firmware info",
 		Action: func(c *cli.Context) error {
-			info, err := api.FirmwareInfo()
+			info, err := api.CoreFirmwareInfo()
 			if err != nil {
 				return err
 			}
@@ -30,12 +30,12 @@ func showInfo(app *cli.App, api *opnsense.Api) *cli.Command {
 	}
 }
 
-func showStatus(app *cli.App, api *opnsense.Api) *cli.Command {
+func firmwareStatus(app *cli.App, api *opnsense.Api) *cli.Command {
 	return &cli.Command{
 		Name:  "status",
 		Usage: "show firmware status",
 		Action: func(c *cli.Context) error {
-			status, err := api.FirmwareStatus()
+			status, err := api.CoreFirmwareStatus()
 			if err != nil {
 				return err
 			}
@@ -53,13 +53,25 @@ func showStatus(app *cli.App, api *opnsense.Api) *cli.Command {
 	}
 }
 
-func showCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
-	var commands []*cli.Command
+func firmwareRunning(app *cli.App, api *opnsense.Api) *cli.Command {
+	return &cli.Command{
+		Name:  "running",
+		Usage: "show if firmware is ready",
+		Action: func(c *cli.Context) error {
+			running, err := api.CoreFirmwareRunning()
+			if err != nil {
+				return err
+			}
 
-	commands = append(commands,
-		showInfo(app, api),
-		showStatus(app, api),
-	)
-
-	return commands
+			switch api.Options.Print {
+			case "json":
+				oc.PrintJson(running)
+			default:
+				var l []interface{}
+				l = append(l, running)
+				oc.PrintList(&l, c.String("properties"))
+			}
+			return nil
+		},
+	}
 }

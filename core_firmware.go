@@ -5,12 +5,13 @@ import (
 )
 
 const (
-	firmwareBasePath   = "core/firmware/"
-	firmwareStatusPath = firmwareBasePath + "status"
-	firmwareInfoPath   = firmwareBasePath + "info"
+	coreFirmwareBasePath    = "core/firmware/"
+	coreFirmwareStatusPath  = coreFirmwareBasePath + "status"
+	coreFirmwareInfoPath    = coreFirmwareBasePath + "info"
+	coreFirmwareRunningPath = coreFirmwareBasePath + "running"
 )
 
-type FirmwareInfo struct {
+type CoreFirmwareInfo struct {
 	ProductName    string `json:"product_name"`
 	ProductVersion string `json:"product_version"`
 	Package        []struct {
@@ -48,7 +49,7 @@ type FirmwareInfo struct {
 	} `json:"changelog"`
 }
 
-type FirmwareStatus struct {
+type CoreFirmwareStatus struct {
 	Connection          string        `json:"connection"`
 	DowngradePackages   []interface{} `json:"downgrade_packages"`
 	DownloadSize        string        `json:"download_size"`
@@ -70,13 +71,17 @@ type FirmwareStatus struct {
 	Status              string        `json:"status"`
 }
 
-func (api *Api) FirmwareStatus() (*FirmwareStatus, error) {
-	b, err := api.Do("GET", api.Host+firmwareStatusPath, nil)
+type CoreFirmwareRunning struct {
+	Status string `json:"status"`
+}
+
+func (api *Api) CoreFirmwareStatus() (*CoreFirmwareStatus, error) {
+	b, err := api.Do("GET", api.Host+coreFirmwareStatusPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	status := FirmwareStatus{}
+	status := CoreFirmwareStatus{}
 
 	err = json.Unmarshal(b, &status)
 	if err != nil {
@@ -86,13 +91,13 @@ func (api *Api) FirmwareStatus() (*FirmwareStatus, error) {
 	return &status, nil
 }
 
-func (api *Api) FirmwareInfo() (*FirmwareInfo, error) {
-	b, err := api.Do("GET", api.Host+firmwareInfoPath, nil)
+func (api *Api) CoreFirmwareInfo() (*CoreFirmwareInfo, error) {
+	b, err := api.Do("GET", api.Host+coreFirmwareInfoPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	info := FirmwareInfo{}
+	info := CoreFirmwareInfo{}
 
 	err = json.Unmarshal(b, &info)
 	if err != nil {
@@ -100,4 +105,20 @@ func (api *Api) FirmwareInfo() (*FirmwareInfo, error) {
 	}
 
 	return &info, nil
+}
+
+func (api *Api) CoreFirmwareRunning() (*CoreFirmwareRunning, error) {
+	b, err := api.Do("GET", api.Host+coreFirmwareRunningPath, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	running := CoreFirmwareRunning{}
+
+	err = json.Unmarshal(b, &running)
+	if err != nil {
+		return nil, err
+	}
+
+	return &running, nil
 }

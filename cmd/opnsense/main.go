@@ -7,8 +7,9 @@ import (
 
 	"github.com/chopnico/opnsense"
 
+	"github.com/chopnico/opnsense/internal/cli/core"
 	"github.com/chopnico/opnsense/internal/cli/diagnostics"
-	"github.com/chopnico/opnsense/internal/cli/firmware"
+	"github.com/chopnico/opnsense/internal/cli/firewall"
 
 	"github.com/urfave/cli/v2"
 )
@@ -92,8 +93,9 @@ func main() {
 		return nil
 	}
 
-	firmware.NewCommand(app, &api)
+	core.NewCommand(app, &api)
 	diagnostics.NewCommand(app, &api)
+	firewall.NewCommand(app, &api)
 
 	err := app.Run(os.Args)
 	if err != nil {
