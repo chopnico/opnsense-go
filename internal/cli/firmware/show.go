@@ -19,18 +19,11 @@ func showInfo(app *cli.App, api *opnsense.Api) *cli.Command {
 
 			switch api.Options.Print {
 			case "json":
-				err := oc.PrintJson(info)
-				if err != nil {
-					return err
-				}
-				return nil
+				oc.PrintJson(info)
 			default:
-				data := [][]string{
-					[]string{info.ProductName, info.ProductVersion},
-				}
-
-				headers := []string{"ProductName", "ProductVersion"}
-				oc.PrintTable(data, headers)
+				var l []interface{}
+				l = append(l, info)
+				oc.PrintList(&l, c.String("properties"))
 			}
 			return nil
 		},
@@ -49,25 +42,11 @@ func showStatus(app *cli.App, api *opnsense.Api) *cli.Command {
 
 			switch api.Options.Print {
 			case "json":
-				err := oc.PrintJson(status)
-				if err != nil {
-					return err
-				}
-				return nil
+				oc.PrintJson(status)
 			default:
-				var update string
-				if status.Updates != "0" {
-					update = "true"
-				} else {
-					update = "false"
-				}
-
-				data := [][]string{
-					[]string{status.Connection, status.OsVersion, status.ProductVersion, update},
-				}
-
-				headers := []string{"Connection", "OsVersion", "ProductVersion", "Update?"}
-				oc.PrintTable(data, headers)
+				var l []interface{}
+				l = append(l, status)
+				oc.PrintList(&l, c.String("properties"))
 			}
 			return nil
 		},

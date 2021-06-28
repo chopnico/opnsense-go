@@ -1,12 +1,26 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/chopnico/output"
 	"github.com/olekukonko/tablewriter"
 )
+
+func PrintList(i *[]interface{}, p string) {
+	var o string
+
+	if p == "" {
+		o = output.FormatList(i, nil)
+	} else {
+		b := strings.Split(p, ",")
+		o = output.FormatList(i, b)
+	}
+
+	fmt.Print(o)
+}
 
 func PrintTable(data [][]string, header []string) {
 	t := tablewriter.NewWriter(os.Stdout)
@@ -26,13 +40,10 @@ func PrintTable(data [][]string, header []string) {
 	t.Render()
 }
 
-func PrintJson(i interface{}) error {
-	j, err := json.Marshal(i)
+func PrintJson(i interface{}) {
+	var a []interface{}
+	a = append(a, i)
+	o := output.FormatJson(&a)
 
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%s\n", j)
-	return nil
+	fmt.Print(o)
 }

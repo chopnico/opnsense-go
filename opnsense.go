@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -29,6 +30,7 @@ type ApiOptions struct {
 	IgnoreSslErrors bool
 	TimeOut         int
 	Logging         string
+	Proxy           string
 	Print           string
 }
 
@@ -50,15 +52,26 @@ func (o *ApiOptions) defaultOptions() {
 }
 
 // Build HTTP client options
-func (api *Api) httpOptions() {
+func (api *Api) httpOptions() error {
+	tr := &http.Transport{}
+
 	if api.Options.IgnoreSslErrors {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		api.httpClient.Transport = tr
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
+	if api.Options.Proxy != "" {
+		if u, err := url.Parse(api.Options.Proxy); err != nil {
+			return err
+		} else {
+			tr.Proxy = http.ProxyURL(u)
+		}
+	}
+
+	api.httpClient.Transport = tr
+
 	api.httpClient.Timeout = time.Duration(api.Options.TimeOut) * time.Second
+
+	return nil
 }
 
 // Creates a API client that uses basic auth
@@ -83,7 +96,10 @@ func NewApiBasicAuth(username string, password string, host string, options *Api
 		httpClient: &http.Client{},
 	}
 
-	api.httpOptions()
+	err := api.httpOptions()
+	if err != nil {
+		return nil, err
+	}
 
 	return api, nil
 }
@@ -98,6 +114,7 @@ func (api *Api) Do(method, url string, body []byte) ([]byte, error) {
 	}
 
 	req.SetBasicAuth(api.Username, api.Password)
+	req.Header.Add("ContentType", "application/json;charset=utf-8")
 
 	resp, err := api.httpClient.Do(req)
 	if err != nil {

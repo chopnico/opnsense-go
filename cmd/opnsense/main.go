@@ -45,15 +45,19 @@ func main() {
 			Usage: "http timeout",
 			Value: 0,
 		},
-		&cli.BoolFlag{
-			Name:  "json",
-			Usage: "print as json",
-			Value: false,
+		&cli.StringFlag{
+			Name:  "format",
+			Usage: "printing format (json, list, table)",
+			Value: "table",
 		},
 		&cli.StringFlag{
 			Name:  "logging",
 			Usage: "set logging level",
 			Value: "info",
+		},
+		&cli.StringFlag{
+			Name:  "proxy",
+			Usage: "set http proxy",
 		},
 	}
 	app.Before = func(c *cli.Context) error {
@@ -69,12 +73,8 @@ func main() {
 			IgnoreSslErrors: c.Bool("ignore-ssl"),
 			TimeOut:         c.Int("timeout"),
 			Logging:         c.String("logging"),
-		}
-
-		if c.Bool("json") {
-			options.Print = "json"
-		} else {
-			options.Print = "table"
+			Proxy:           c.String("proxy"),
+			Print:           c.String("format"),
 		}
 
 		a, err := opnsense.NewApiBasicAuth(

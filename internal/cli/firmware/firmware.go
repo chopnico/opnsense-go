@@ -14,9 +14,17 @@ func NewCommand(app *cli.App, api *opnsense.Api) {
 			Usage:   "firewall firmware",
 			Subcommands: []*cli.Command{
 				{
-					Name:        "show",
-					Usage:       "show firewall information",
-					Aliases:     []string{"s"},
+					Name:    "show",
+					Usage:   "show firewall information",
+					Aliases: []string{"s"},
+					Flags: []cli.Flag{
+						&cli.StringFlag{
+							Name:     "properties",
+							Aliases:  []string{"p"},
+							Usage:    "Show only these`PROPERTIES` (comma separated)",
+							Required: false,
+						},
+					},
 					Subcommands: showCommands(app, api),
 				},
 			},
