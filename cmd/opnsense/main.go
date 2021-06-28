@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/chopnico/opnsense"
+	"github.com/chopnico/opnsense-go"
 
-	"github.com/chopnico/opnsense/internal/cli/core"
-	"github.com/chopnico/opnsense/internal/cli/diagnostics"
-	"github.com/chopnico/opnsense/internal/cli/firewall"
+	"github.com/chopnico/opnsense-go/internal/cli/core"
+	"github.com/chopnico/opnsense-go/internal/cli/diagnostics"
+	"github.com/chopnico/opnsense-go/internal/cli/firewall"
 
 	"github.com/urfave/cli/v2"
 )

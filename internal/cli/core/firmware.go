@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/chopnico/opnsense"
-	oc "github.com/chopnico/opnsense/internal/cli"
+	"github.com/chopnico/opnsense-go"
+	oc "github.com/chopnico/opnsense-go/internal/cli"
 
 	"github.com/urfave/cli/v2"
 )

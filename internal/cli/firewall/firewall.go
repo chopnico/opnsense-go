@@ -1,7 +1,7 @@
 package firewall
 
 import (
-	"github.com/chopnico/opnsense"
+	"github.com/chopnico/opnsense-go"
 
 	"github.com/urfave/cli/v2"
 )

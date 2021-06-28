@@ -1,4 +1,4 @@
-module github.com/chopnico/opnsense
+module github.com/chopnico/opnsense-go
 
 go 1.16
 
