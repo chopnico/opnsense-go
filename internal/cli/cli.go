@@ -1,49 +1,64 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
-	"github.com/chopnico/output"
-	"github.com/olekukonko/tablewriter"
+	"github.com/urfave/cli/v2"
 )
 
-func PrintList(i *[]interface{}, p string) {
-	var o string
+func NewCommands(app *cli.App) {
+	app.Commands = append(app.Commands,
+		&cli.Command{
+			Name:    "system",
+			Aliases: []string{"s"},
+			Usage:   "interact with system related stuff",
+			Subcommands: []*cli.Command{
+				&cli.Command{
+					Name:        "firmware",
+					Aliases:     []string{"f"},
+					Usage:       "interact with the system firmware",
+					Subcommands: firmwareCommands(app),
+				},
+			},
+		},
+		&cli.Command{
+			Name:        "routes",
+			Aliases:     []string{"r"},
+			Usage:       "interact with routes",
+			Subcommands: routesCommands(app),
+		},
+	)
+}
 
-	if p == "" {
-		o = output.FormatList(i, nil)
-	} else {
-		b := strings.Split(p, ",")
-		o = output.FormatList(i, b)
+func globalFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:     "properties",
+			Aliases:  []string{"p"},
+			Usage:    "`PROPERTIES` to print (only relevant to list format)",
+			Required: false,
+		},
 	}
-
-	fmt.Print(o)
 }
 
-func PrintTable(data [][]string, header []string) {
-	t := tablewriter.NewWriter(os.Stdout)
-	t.SetHeader(header)
-	t.SetAutoWrapText(false)
-	t.SetAutoFormatHeaders(true)
-	t.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	t.SetAlignment(tablewriter.ALIGN_LEFT)
-	t.SetCenterSeparator("")
-	t.SetColumnSeparator("")
-	t.SetRowSeparator("")
-	t.SetHeaderLine(false)
-	t.SetBorder(false)
-	t.SetTablePadding("\t")
-	t.SetNoWhiteSpace(true)
-	t.AppendBulk(data)
-	t.Render()
+func firmwareCommands(app *cli.App) []*cli.Command {
+	var commands []*cli.Command
+
+	commands = append(commands,
+		firmwareInfo(app),
+		firmwareStatus(app),
+		firmwareRunning(app),
+	)
+
+	return commands
 }
 
-func PrintJson(i interface{}) {
-	var a []interface{}
-	a = append(a, i)
-	o := output.FormatJson(&a)
+func routesCommands(app *cli.App) []*cli.Command {
+	var commands []*cli.Command
 
-	fmt.Print(o)
+	commands = append(commands,
+		listRoutes(app),
+		getRoute(app),
+		setRoute(app),
+	)
+
+	return commands
 }

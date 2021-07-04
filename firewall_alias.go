@@ -26,7 +26,7 @@ type FirewallAliases struct {
 }
 
 func (api *Api) FirewallAlias() (*[]FirewallAlias, error) {
-	b, err := api.Do("GET", api.Host+firewallAliasExport, nil)
+	b, err := api.Do("GET", firewallAliasExport, nil)
 	if err != nil {
 		return nil, err
 	}

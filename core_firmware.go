@@ -76,7 +76,7 @@ type CoreFirmwareRunning struct {
 }
 
 func (api *Api) CoreFirmwareStatus() (*CoreFirmwareStatus, error) {
-	b, err := api.Do("GET", api.Host+coreFirmwareStatusPath, nil)
+	b, err := api.Do("GET", coreFirmwareStatusPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (api *Api) CoreFirmwareStatus() (*CoreFirmwareStatus, error) {
 }
 
 func (api *Api) CoreFirmwareInfo() (*CoreFirmwareInfo, error) {
-	b, err := api.Do("GET", api.Host+coreFirmwareInfoPath, nil)
+	b, err := api.Do("GET", coreFirmwareInfoPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (api *Api) CoreFirmwareInfo() (*CoreFirmwareInfo, error) {
 }
 
 func (api *Api) CoreFirmwareRunning() (*CoreFirmwareRunning, error) {
-	b, err := api.Do("GET", api.Host+coreFirmwareRunningPath, nil)
+	b, err := api.Do("GET", coreFirmwareRunningPath, nil)
 	if err != nil {
 		return nil, err
 	}

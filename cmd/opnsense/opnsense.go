@@ -1,40 +1,51 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
 
 	"github.com/chopnico/opnsense-go"
-
-	"github.com/chopnico/opnsense-go/internal/cli/core"
-	"github.com/chopnico/opnsense-go/internal/cli/diagnostics"
-	"github.com/chopnico/opnsense-go/internal/cli/firewall"
+	CLI "github.com/chopnico/opnsense-go/internal/cli"
 
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	var api opnsense.Api
+// some application and default variables
+var (
+	AppName  string = "flare"
+	AppUsage string = "a cloudflare cli/tui tool"
+	// ldflags will be used to set this. check Makefile
+	AppVersion string
 
+	DefaultLoggingLevel = "info"
+	DefaultPrintFormat  = "table"
+	DefaultTimeOut      = 60
+)
+
+func main() {
 	app := cli.NewApp()
 	app.Name = "opnsense"
 	app.Usage = "opnsense CLI"
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:    "key",
-			Usage:   "account `KEY`",
-			EnvVars: []string{"OPNSENSE_KEY"},
+			Name:        "key",
+			Usage:       "account `KEY`",
+			EnvVars:     []string{"OPNSENSE_KEY"},
+			DefaultText: "none",
 		},
 		&cli.StringFlag{
-			Name:    "secret",
-			Usage:   "account `SECRET`",
-			EnvVars: []string{"OPNSENSE_SECRET"},
+			Name:        "secret",
+			Usage:       "account `SECRET`",
+			EnvVars:     []string{"OPNSENSE_SECRET"},
+			DefaultText: "none",
 		},
 		&cli.StringFlag{
-			Name:    "host",
-			Usage:   "firewall `HOST` (firewall.example.local)",
-			EnvVars: []string{"OPNSENSE_HOST"},
+			Name:        "host",
+			Usage:       "firewall `HOST` (firewall.example.local)",
+			EnvVars:     []string{"OPNSENSE_HOST"},
+			DefaultText: "none",
 		},
 		&cli.BoolFlag{
 			Name:  "ignore-ssl",
@@ -62,44 +73,58 @@ func main() {
 		},
 	}
 	app.Before = func(c *cli.Context) error {
+		var err error
+		var api opnsense.Api
+
 		if c.String("key") == "" {
-			return errors.New(opnsense.ErrorEmptyUsername)
+			cli.ShowAppHelp(c)
+			return errors.New(opnsense.ErrorEmptyKey)
 		} else if c.String("secret") == "" {
-			return errors.New(opnsense.ErrorEmptyPassword)
+			cli.ShowAppHelp(c)
+			return errors.New(opnsense.ErrorEmptySecret)
 		} else if c.String("host") == "" {
+			cli.ShowAppHelp(c)
 			return errors.New(opnsense.ErrorEmptyHost)
 		}
 
-		options := opnsense.ApiOptions{
-			IgnoreSslErrors: c.Bool("ignore-ssl"),
-			TimeOut:         c.Int("timeout"),
-			Logging:         c.String("logging"),
-			Proxy:           c.String("proxy"),
-			Print:           c.String("format"),
-		}
-
-		a, err := opnsense.NewApiBasicAuth(
+		// create new api client with basic auth
+		api, err = opnsense.NewApiBasicAuth(
 			c.String("key"),
 			c.String("secret"),
 			c.String("host"),
-			&options,
 		)
 		if err != nil {
 			return err
 		}
 
-		api = (*a)
+		// set options
+		api.Timeout(c.Int("timeout")).
+			LoggingLevel(c.String("logging")).
+			Proxy(c.String("proxy"))
+
+		// should we ignore ssl errors?
+		if c.Bool("ignore-ssl") {
+			api.IgnoreSslErrors()
+		}
+
+		// add the api client to the cli context so that it can be used
+		// throughout the application. call c.Context.Value("api").(opnsense.Api)
+		// in an action to retrieve the api client
+		ctx := context.WithValue(c.Context, "api", api)
+		c.Context = ctx
 
 		return nil
 	}
 
-	core.NewCommand(app, &api)
-	diagnostics.NewCommand(app, &api)
-	firewall.NewCommand(app, &api)
+	// create cli commands
+	CLI.NewCommands(app)
 
+	// run the application
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		if err.Error() != "debugging" {
+			log.Fatal(err)
+		}
 	}
 
 	os.Exit(0)

@@ -145,7 +145,7 @@ type DiagnosticsInterfaceRoute struct {
 }
 
 func (api *Api) DiagnosticsInterfaceArp() (*[]DiagnosticsInterfaceArp, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetArp, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetArp, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func (api *Api) DiagnosticsInterfaceArp() (*[]DiagnosticsInterfaceArp, error) {
 }
 
 func (api *Api) DiagnosticsInterfaceRoutes() (*[]DiagnosticsInterfaceRoute, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetRoutes, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetRoutes, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (api *Api) DiagnosticsInterfaceRoutes() (*[]DiagnosticsInterfaceRoute, erro
 }
 
 func (api *Api) DiagnosticsInterfaceBpfStatistics() (*[]DiagnosticsInterfaceBpfStatisticsEntry, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetBpfStatistics, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetBpfStatistics, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (api *Api) DiagnosticsInterfaceBpfStatistics() (*[]DiagnosticsInterfaceBpfS
 }
 
 func (api *Api) DiagnosticsInterfaceStatistics() (*[]DiagnosticsInterface, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetInterfaceStatistics, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetInterfaceStatistics, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func (api *Api) DiagnosticsInterfaceStatistics() (*[]DiagnosticsInterface, error
 }
 
 func (api *Api) DiagnosticsInterfaceMemoryStatistics() (*DiagnosticsInterfaceMemoryStatisticsEntry, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetMemoryStatistics, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetMemoryStatistics, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (api *Api) DiagnosticsInterfaceMemoryStatistics() (*DiagnosticsInterfaceMem
 }
 
 func (api *Api) DiagnosticsInterfaceNdp() (*[]DiagnosticsInterfaceNdp, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsInterfaceGetNdp, nil)
+	b, err := api.Do("GET", diagnosticsInterfaceGetNdp, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ func interfaceArp(app *cli.App, api *opnsense.Api) *cli.Command {
 			&cli.StringFlag{
 				Name:    "properties",
 				Aliases: []string{"p"},
-				Usage:   "show only these`PROPERTIES` (comma separated)",
+				Usage:   "show only these `PROPERTIES` (comma separated)",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -60,7 +60,7 @@ func interfaces(app *cli.App, api *opnsense.Api) *cli.Command {
 			&cli.StringFlag{
 				Name:    "properties",
 				Aliases: []string{"p"},
-				Usage:   "show only these`PROPERTIES` (comma separated)",
+				Usage:   "show only these `PROPERTIES` (comma separated)",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -130,67 +130,6 @@ func interfaceNdp(app *cli.App, api *opnsense.Api) *cli.Command {
 				}
 
 				headers := []string{"Interface", "Description", "MacAddress", "IP", "Manufacture"}
-				oc.PrintTable(data, headers)
-			}
-			return nil
-		},
-	}
-}
-
-func interfaceRoutes(app *cli.App, api *opnsense.Api) *cli.Command {
-	return &cli.Command{
-		Name:    "routes",
-		Usage:   "list all routes",
-		Aliases: []string{"r"},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "properties",
-				Aliases: []string{"p"},
-				Usage:   "show only these`PROPERTIES` (comma separated)",
-			},
-			&cli.StringFlag{
-				Name:  "ip",
-				Usage: "ip version (4 or 6)",
-			},
-		},
-		Action: func(c *cli.Context) error {
-			routes, err := api.DiagnosticsInterfaceRoutes()
-			if err != nil {
-				return err
-			}
-
-			switch api.Options.Print {
-			case "json":
-				oc.PrintJson(routes)
-			case "list":
-				var l []interface{}
-				for _, i := range *routes {
-					l = append(l, i)
-				}
-				oc.PrintList(&l, c.String("properties"))
-			default:
-				data := [][]string{}
-				for _, i := range *routes {
-					if c.String("ip") == "4" {
-						if i.Proto == "ipv4" {
-							data = append(data,
-								[]string{i.Destination, i.Gateway, i.Netif, i.IntfDescription, i.Mtu},
-							)
-						}
-					} else if c.String("ip") == "6" {
-						if i.Proto == "ipv6" {
-							data = append(data,
-								[]string{i.Destination, i.Gateway, i.Netif, i.IntfDescription, i.Mtu},
-							)
-						}
-					} else {
-						data = append(data,
-							[]string{i.Destination, i.Gateway, i.Netif, i.IntfDescription, i.Mtu},
-						)
-					}
-				}
-
-				headers := []string{"Destination", "Gateway", "Interface", "Description", "MTU"}
 				oc.PrintTable(data, headers)
 			}
 			return nil

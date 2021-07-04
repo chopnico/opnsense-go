@@ -14,17 +14,24 @@ func NewCommand(app *cli.App, api *opnsense.Api) {
 			Usage:   "firewall",
 			Subcommands: []*cli.Command{
 				{
-					Name:        "alias",
-					Usage:       "firewall alias",
-					Aliases:     []string{"a"},
-					Subcommands: firewallAliasCommands(app, api),
+					Name:    "alias",
+					Usage:   "list firewall stuff",
+					Aliases: []string{"l"},
+					Subcommands: []*cli.Command{
+						{
+							Name:        "list",
+							Usage:       "firewall alias",
+							Aliases:     []string{"a"},
+							Subcommands: listFirewallAliasCommands(app, api),
+						},
+					},
 				},
 			},
 		},
 	)
 }
 
-func firewallAliasCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
+func listFirewallAliasCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands,

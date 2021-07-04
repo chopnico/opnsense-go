@@ -14,10 +14,23 @@ func NewCommand(app *cli.App, api *opnsense.Api) {
 			Usage:   "firewall diagnostics",
 			Subcommands: []*cli.Command{
 				{
-					Name:        "interface",
-					Usage:       "show interface diagnostics information",
-					Aliases:     []string{"i"},
-					Subcommands: interfaceCommands(app, api),
+					Name:    "interface",
+					Usage:   "show interface diagnostics information",
+					Aliases: []string{"i"},
+					Subcommands: []*cli.Command{
+						{
+							Name:        "list",
+							Usage:       "list interface stuff",
+							Aliases:     []string{"l"},
+							Subcommands: listInterfaceCommands(app, api),
+						},
+						{
+							Name:        "show",
+							Usage:       "show interface stuff",
+							Aliases:     []string{"s"},
+							Subcommands: showInterfaceCommands(app, api),
+						},
+					},
 				},
 				{
 					Name:        "firewall",
@@ -30,7 +43,17 @@ func NewCommand(app *cli.App, api *opnsense.Api) {
 	)
 }
 
-func interfaceCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
+func showInterfaceCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
+	var commands []*cli.Command
+
+	commands = append(commands,
+		interfaceStatistics(app, api),
+	)
+
+	return commands
+}
+
+func listInterfaceCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands,
@@ -38,7 +61,6 @@ func interfaceCommands(app *cli.App, api *opnsense.Api) []*cli.Command {
 		interfaceArp(app, api),
 		interfaceNdp(app, api),
 		interfaceRoutes(app, api),
-		interfaceStatistics(app, api),
 	)
 
 	return commands

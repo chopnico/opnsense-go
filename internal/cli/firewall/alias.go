@@ -9,8 +9,8 @@ import (
 
 func firewallAlias(app *cli.App, api *opnsense.Api) *cli.Command {
 	return &cli.Command{
-		Name:    "export",
-		Usage:   "list aliases",
+		Name:    "all",
+		Usage:   "list all aliases",
 		Aliases: []string{"e"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

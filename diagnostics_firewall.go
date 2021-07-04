@@ -51,7 +51,7 @@ type DiagnosticsFirewallLogEntry struct {
 }
 
 func (api *Api) DiagnosticsFirewallLog(limit string) (*[]DiagnosticsFirewallLogEntry, error) {
-	b, err := api.Do("GET", api.Host+diagnosticsFirewallLog+"/?limit="+limit, nil)
+	b, err := api.Do("GET", diagnosticsFirewallLog+"/?limit="+limit, nil)
 	if err != nil {
 		return nil, err
 	}
