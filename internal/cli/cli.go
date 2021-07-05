@@ -58,6 +58,7 @@ func routesCommands(app *cli.App) []*cli.Command {
 		listRoutes(app),
 		getRoute(app),
 		setRoute(app),
+		deleteRoute(app),
 	)
 
 	return commands

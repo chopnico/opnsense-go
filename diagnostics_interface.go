@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	diagnosticsInterfaceBasePath               = "diagnostics/interface/"
+	diagnosticsInterfaceBasePath               = "/diagnostics/interface/"
 	diagnosticsInterfaceDeleteRoute            = diagnosticsInterfaceBasePath + "delRoute"
 	diagnosticsInterfaceFlushArp               = diagnosticsInterfaceBasePath + "flushArp"
 	diagnosticsInterfaceGetArp                 = diagnosticsInterfaceBasePath + "getArp"

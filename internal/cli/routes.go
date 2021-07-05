@@ -10,8 +10,38 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func deleteRoute(app *cli.App) *cli.Command {
+	flags := []cli.Flag{}
+	flags = append(flags,
+		&cli.StringFlag{
+			Name:     "uuid",
+			Aliases:  []string{"u"},
+			Usage:    "the `UUID` of the route",
+			Required: true,
+		},
+	)
+
+	return &cli.Command{
+		Name:    "delete",
+		Usage:   "delete a single route",
+		Aliases: []string{"d"},
+		Flags:   flags,
+		Action: func(c *cli.Context) error {
+			api := c.Context.Value("api").(opnsense.Api)
+			err := api.DeleteRoute(c.String("uuid"))
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("route with uuid " + c.String("uuid") + "has been deleted")
+
+			return nil
+		},
+	}
+}
+
 func setRoute(app *cli.App) *cli.Command {
-	flags := globalFlags()
+	flags := []cli.Flag{}
 	flags = append(flags,
 		&cli.StringFlag{
 			Name:     "destination",
@@ -33,7 +63,6 @@ func setRoute(app *cli.App) *cli.Command {
 		},
 		&cli.BoolFlag{
 			Name:     "disable",
-			Aliases:  []string{"e"},
 			Usage:    "should we `DISABLE` the route",
 			Value:    false,
 			Required: false,
@@ -48,9 +77,9 @@ func setRoute(app *cli.App) *cli.Command {
 		Action: func(c *cli.Context) error {
 			api := c.Context.Value("api").(opnsense.Api)
 			route := opnsense.Route{
-				Network: c.String("destination"),
-				Gateway: c.String("gateway"),
-				Descr:   c.String("description"),
+				Network:     c.String("destination"),
+				Gateway:     c.String("gateway"),
+				Description: c.String("description"),
 			}
 
 			if c.Bool("disable") {
@@ -79,6 +108,7 @@ func setRoute(app *cli.App) *cli.Command {
 		},
 	}
 }
+
 func getRoute(app *cli.App) *cli.Command {
 	flags := globalFlags()
 	flags = append(flags,
@@ -147,11 +177,11 @@ func listRoutes(app *cli.App) *cli.Command {
 				data := [][]string{}
 				for _, i := range *routes {
 					data = append(data,
-						[]string{i.UUID, i.Network, i.Gateway, i.Descr, i.Disabled},
+						[]string{i.UUID, i.Network, i.Gateway, i.Description, i.Disabled},
 					)
 				}
 
-				headers := []string{"UUID", "Network", "Gateway", "Description", "Disabled"}
+				headers := []string{"UUID", "Network", "Gateway", "Descriptioniption", "Disabled"}
 				fmt.Print(output.FormatTable(data, headers))
 			}
 			return nil

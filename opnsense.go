@@ -22,13 +22,14 @@ const (
 	apiPath        = "/api"
 )
 
-// The API client
+// the api client
 type Api struct {
 	options    map[string]interface{}
 	httpClient *http.Client
 }
 
-type apiResponseError struct {
+// api error
+type apiError struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }
@@ -89,6 +90,24 @@ func (api Api) LoggingLevel(v string) Api {
 	return api
 }
 
+// sets http client headers
+func (api Api) HttpHeaders(v map[string]interface{}) Api {
+	api.option("http-headers", v)
+	return api
+}
+
+// debug writer
+func (api *Api) WriteToDebugLog(msg string) {
+	logger := api.options["logger-debug"].(*log.Logger)
+	logger.Println(msg)
+}
+
+// info writer
+func (api *Api) WriteToInfoLog(msg string) {
+	logger := api.options["logger-info"].(*log.Logger)
+	logger.Println(msg)
+}
+
 func (api *Api) option(k string, v interface{}) {
 	if api.options == nil {
 		api.options = make(map[string]interface{})
@@ -129,12 +148,13 @@ func defaultDebugLogger() *log.Logger {
 }
 
 // creates a response error
-func newResponseError(b []byte) apiResponseError {
-	r := apiResponseError{}
+func newApiError(b []byte) apiError {
+	r := apiError{}
 	json.Unmarshal(b, &r)
 	return r
 }
 
+// checks to see if logging level is set to debug
 func (api *Api) isLoggingDebug() bool {
 	if api.options["logging-level"].(string) == "debug" {
 		return true
@@ -142,11 +162,16 @@ func (api *Api) isLoggingDebug() bool {
 	return false
 }
 
+// checks to see if logging level is set to info
 func (api *Api) isLoggingInfo() bool {
 	if api.options["logging-level"].(string) == "info" {
 		return true
 	}
 	return false
+}
+
+func (api *Api) getHttpHeaders() map[string]interface{} {
+	return api.options["http-headers"].(map[string]interface{})
 }
 
 // Creates a API client that uses basic auth
@@ -160,15 +185,21 @@ func NewApiBasicAuth(username string, password string, host string) (Api, error)
 	api.option("url", "https://"+host+apiPath)
 	api.option("logger-info", defaultInfoLogger())
 	api.option("logger-debug", defaultDebugLogger())
+	api.option("http-headers", make(map[string]interface{}))
 
 	return api, nil
 }
 
 // The main do function for an api request
+// lots of debugging code going on here
+// REVIEW: refactor
 func (api *Api) Do(method, path string, body []byte) ([]byte, error) {
+	// read them bytes
 	r := bytes.NewReader(body)
 
+	// generate a new request
 	req, err := http.NewRequest(method, api.options["url"].(string)+path, r)
+	// DEBUG
 	if api.isLoggingDebug() {
 		api.WriteToDebugLog("request url : " + req.URL.Host)
 		api.WriteToDebugLog("request method : " + req.Method)
@@ -181,10 +212,22 @@ func (api *Api) Do(method, path string, body []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	// set username and password for request
 	req.SetBasicAuth(api.options["username"].(string), api.options["password"].(string))
-	req.Header.Add("ContentType", "application/json;charset=utf-8")
+	// set some headers for the request
+	// headers are set using the api.HttpHeaders option
+	headers := api.getHttpHeaders()
+	if len(headers) != 0 {
+		for k, v := range headers {
+			req.Header.Set(k, fmt.Sprintf("%s", v))
+		}
+	} else {
+		req.Header.Set("Content-Type", "application/json;charset=utf-8")
+	}
 
+	// make the formal request using the an http client
 	resp, err := api.httpClient.Do(req)
+	// DEBUG
 	if api.isLoggingDebug() {
 		api.WriteToDebugLog("request headers : " + output.FormatItemAsPrettyJson(req.Header))
 		api.WriteToDebugLog("request uri : " + req.URL.RequestURI())
@@ -197,6 +240,7 @@ func (api *Api) Do(method, path string, body []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	// read the binary response
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if api.isLoggingDebug() {
@@ -207,9 +251,10 @@ func (api *Api) Do(method, path string, body []byte) ([]byte, error) {
 
 	defer resp.Body.Close()
 
+	//DEBUG
 	if api.isLoggingDebug() {
 		if err != nil {
-			e := newResponseError(b)
+			e := newApiError(b)
 			api.WriteToDebugLog("response message : " + e.Message)
 			api.WriteToDebugLog("response status code : " + fmt.Sprintf("%d", e.Status))
 		}
@@ -221,20 +266,13 @@ func (api *Api) Do(method, path string, body []byte) ([]byte, error) {
 
 	if resp.StatusCode != 200 {
 		if api.isLoggingDebug() {
+			e := newApiError(b)
+			api.WriteToDebugLog("response message : " + e.Message)
+			api.WriteToDebugLog("response status code : " + fmt.Sprintf("%d", e.Status))
 			return nil, errors.New("debugging")
 		}
 		return nil, errors.New("something went wrong. enable debug logs for more information")
 	}
 
 	return b, nil
-}
-
-func (api *Api) WriteToDebugLog(msg string) {
-	logger := api.options["logger-debug"].(*log.Logger)
-	logger.Println(msg)
-}
-
-func (api *Api) WriteToInfoLog(msg string) {
-	logger := api.options["logger-info"].(*log.Logger)
-	logger.Println(msg)
 }

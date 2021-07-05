@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	coreFirmwareBasePath    = "core/firmware/"
+	coreFirmwareBasePath    = "/core/firmware/"
 	coreFirmwareStatusPath  = coreFirmwareBasePath + "status"
 	coreFirmwareInfoPath    = coreFirmwareBasePath + "info"
 	coreFirmwareRunningPath = coreFirmwareBasePath + "running"

@@ -83,7 +83,7 @@ func firmwareRunning(app *cli.App) *cli.Command {
 			case "json":
 				fmt.Print(output.FormatItemAsJson(running))
 			default:
-				if c.String("properties") != "" {
+				if c.String("properties") == "" {
 					fmt.Print(output.FormatItemAsList(running, nil))
 				} else {
 					p := strings.Split(c.String("properties"), ",")

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	diagnosticsFirewallBasePath = "diagnostics/firewall/"
+	diagnosticsFirewallBasePath = "/diagnostics/firewall/"
 	diagnosticsFirewallLog      = diagnosticsFirewallBasePath + "log"
 )
 
