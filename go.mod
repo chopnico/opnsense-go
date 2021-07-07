@@ -4,5 +4,6 @@ go 1.16
 
 require (
 	github.com/chopnico/output v0.1.6
+	github.com/google/uuid v1.2.0
 	github.com/urfave/cli/v2 v2.3.0
 )

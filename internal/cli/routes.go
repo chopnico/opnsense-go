@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -12,37 +13,35 @@ import (
 
 func deleteRoute(app *cli.App) *cli.Command {
 	flags := []cli.Flag{}
-	flags = append(flags,
-		&cli.StringFlag{
-			Name:     "uuid",
-			Aliases:  []string{"u"},
-			Usage:    "the `UUID` of the route",
-			Required: true,
-		},
-	)
 
 	return &cli.Command{
-		Name:    "delete",
-		Usage:   "delete a single route",
-		Aliases: []string{"d"},
-		Flags:   flags,
+		Name:      "delete",
+		Usage:     "delete route",
+		ArgsUsage: "UUID",
+		Aliases:   []string{"d"},
+		Flags:     flags,
 		Action: func(c *cli.Context) error {
-			api := c.Context.Value("api").(opnsense.Api)
-			err := api.DeleteRoute(c.String("uuid"))
-			if err != nil {
-				return err
+			if c.Args().Len() == 0 {
+				cli.ShowCommandHelp(c, "delete")
+				return errors.New("you must supply a route")
+			} else {
+				for i := 0; i < c.Args().Len(); i++ {
+					api := c.Context.Value("api").(opnsense.Api)
+					err := api.DeleteRoute(c.Args().Get(i))
+					if err != nil {
+						return err
+					}
+
+					fmt.Println("route with uuid " + c.Args().Get(i) + " has been deleted")
+				}
+				return nil
 			}
-
-			fmt.Println("route with uuid " + c.String("uuid") + "has been deleted")
-
-			return nil
 		},
 	}
 }
 
 func setRoute(app *cli.App) *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags,
+	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:     "destination",
 			Aliases:  []string{"n"},
@@ -67,7 +66,7 @@ func setRoute(app *cli.App) *cli.Command {
 			Value:    false,
 			Required: false,
 		},
-	)
+	}
 
 	return &cli.Command{
 		Name:    "set",
@@ -110,46 +109,69 @@ func setRoute(app *cli.App) *cli.Command {
 }
 
 func getRoute(app *cli.App) *cli.Command {
-	flags := globalFlags()
-	flags = append(flags,
-		&cli.StringFlag{
-			Name:     "uuid",
-			Aliases:  []string{"u"},
-			Usage:    "the `UUID` of the route",
-			Required: true,
-		},
-	)
+	flags := globalFlags(nil)
 
 	return &cli.Command{
-		Name:    "get",
-		Usage:   "get a single route",
-		Aliases: []string{"g"},
-		Flags:   flags,
+		Name:      "get",
+		Usage:     "get a route",
+		ArgsUsage: "UUID",
+		Aliases:   []string{"g"},
+		Flags:     flags,
 		Action: func(c *cli.Context) error {
-			api := c.Context.Value("api").(opnsense.Api)
-			route, err := api.GetRouteByUuid(c.String("uuid"))
-			if err != nil {
-				return err
+			if c.Args().Len() == 0 {
+				cli.ShowCommandHelp(c, "get")
+				return errors.New("you must supply a uuid of a route")
+			} else {
+				for i := 0; i < c.Args().Len(); i++ {
+					api := c.Context.Value("api").(opnsense.Api)
+					route, err := api.GetRouteByUuid(c.Args().Get(i))
+					if err != nil {
+						return err
+					}
+
+					switch c.String("format") {
+					case "json":
+						fmt.Print(output.FormatItemAsJson(route))
+					default:
+						if c.String("properties") == "" {
+							fmt.Print(output.FormatItemAsList(route, nil))
+						} else {
+							p := strings.Split(c.String("properties"), ",")
+							fmt.Print(output.FormatItemAsList(route, p))
+						}
+					}
+				}
+				return nil
 			}
 
-			switch c.String("format") {
-			case "json":
-				fmt.Print(output.FormatItemAsJson(route))
-			default:
-				if c.String("properties") == "" {
-					fmt.Print(output.FormatItemAsList(route, nil))
-				} else {
-					p := strings.Split(c.String("properties"), ",")
-					fmt.Print(output.FormatItemAsList(route, p))
-				}
-			}
-			return nil
 		},
 	}
 }
 
 func listRoutes(app *cli.App) *cli.Command {
-	flags := globalFlags()
+	flags := addQuietFlag(globalFlags(
+		[]cli.Flag{
+			&cli.StringFlag{
+				Name:     "network",
+				Aliases:  []string{"n"},
+				Usage:    "list only routes destined for `NETWORK`",
+				Required: false,
+			},
+			&cli.StringFlag{
+				Name:     "description",
+				Aliases:  []string{"d"},
+				Usage:    "list only routes with `DESCRIPTION`",
+				Required: false,
+			},
+			&cli.BoolFlag{
+				Name:     "enabled",
+				Aliases:  []string{"e"},
+				Usage:    "list only enabled routes",
+				Value:    false,
+				Required: false,
+			},
+		},
+	))
 
 	return &cli.Command{
 		Name:    "list",
@@ -158,31 +180,53 @@ func listRoutes(app *cli.App) *cli.Command {
 		Flags:   flags,
 		Action: func(c *cli.Context) error {
 			api := c.Context.Value("api").(opnsense.Api)
-			routes, err := api.GetRoutes()
+			var (
+				routes *[]opnsense.Route
+				err    error
+			)
+			if c.String("network") != "" && c.String("description") != "" {
+				routes, err = api.GetRoutesByNetworkWithDescription(
+					c.String("network"),
+					c.String("description"),
+					c.Bool("enabled"),
+				)
+			} else if c.String("network") != "" {
+				routes, err = api.GetRoutesByNetwork(c.String("network"), c.Bool("enabled"))
+			} else if c.String("description") != "" {
+				routes, err = api.GetRoutesByDescription(c.String("description"), c.Bool("enabled"))
+			} else {
+				routes, err = api.GetRoutes(c.Bool("enabled"))
+			}
 			if err != nil {
 				return err
 			}
 
-			switch c.String("format") {
-			case "json":
-				fmt.Print(output.FormatItemsAsJson(routes))
-			case "list":
-				if c.String("properties") == "" {
-					fmt.Print(output.FormatItemsAsList(routes, nil))
-				} else {
-					p := strings.Split(c.String("properties"), ",")
-					fmt.Print(output.FormatItemsAsList(routes, p))
+			if c.Bool("quiet") {
+				for _, r := range *routes {
+					fmt.Println(r.UUID)
 				}
-			default:
-				data := [][]string{}
-				for _, i := range *routes {
-					data = append(data,
-						[]string{i.UUID, i.Network, i.Gateway, i.Description, i.Disabled},
-					)
-				}
+			} else {
+				switch c.String("format") {
+				case "json":
+					fmt.Print(output.FormatItemsAsJson(routes))
+				case "list":
+					if c.String("properties") == "" {
+						fmt.Print(output.FormatItemsAsList(routes, nil))
+					} else {
+						p := strings.Split(c.String("properties"), ",")
+						fmt.Print(output.FormatItemsAsList(routes, p))
+					}
+				default:
+					data := [][]string{}
+					for _, i := range *routes {
+						data = append(data,
+							[]string{i.UUID, i.Network, i.Gateway, i.Description, i.Disabled},
+						)
+					}
 
-				headers := []string{"UUID", "Network", "Gateway", "Descriptioniption", "Disabled"}
-				fmt.Print(output.FormatTable(data, headers))
+					headers := []string{"UUID", "Network", "Gateway", "Description", "Disabled"}
+					fmt.Print(output.FormatTable(data, headers))
+				}
 			}
 			return nil
 		},

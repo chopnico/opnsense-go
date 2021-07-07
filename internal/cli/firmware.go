@@ -11,7 +11,7 @@ import (
 )
 
 func firmwareInfo(app *cli.App) *cli.Command {
-	flags := globalFlags()
+	flags := globalFlags(nil)
 
 	return &cli.Command{
 		Name:  "info",
@@ -36,7 +36,7 @@ func firmwareInfo(app *cli.App) *cli.Command {
 }
 
 func firmwareStatus(app *cli.App) *cli.Command {
-	flags := globalFlags()
+	flags := globalFlags(nil)
 
 	return &cli.Command{
 		Name:  "status",
@@ -66,7 +66,7 @@ func firmwareStatus(app *cli.App) *cli.Command {
 }
 
 func firmwareRunning(app *cli.App) *cli.Command {
-	flags := globalFlags()
+	flags := globalFlags(nil)
 
 	return &cli.Command{
 		Name:  "running",

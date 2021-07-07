@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+
+	"github.com/google/uuid"
 )
 
 // a route
@@ -33,12 +35,12 @@ type newRoute struct {
 
 // the api returns the results wrapped in
 // a "rows" object
-type routes struct {
-	Rows []Route `json:"rows"`
+type Routes struct {
+	List []Route `json:"rows"`
 }
 
 // retrieve all routes
-func (api *Api) GetRoutes() (*[]Route, error) {
+func (api *Api) GetRoutes(enabled bool) (*[]Route, error) {
 	// set http headers for request
 	headers := make(map[string]interface{})
 	headers["Content-Type"] = "application/json; charset=UTF-8"
@@ -53,25 +55,93 @@ func (api *Api) GetRoutes() (*[]Route, error) {
 	// create an empty list of routes
 	// unmarshal the bytes
 	// return the routes
-	routes := routes{}
+	routes := Routes{}
 
 	err = json.Unmarshal(b, &routes)
 	if err != nil {
 		return nil, err
 	}
 
-	return &routes.Rows, nil
+	if enabled {
+		r := []Route{}
+		for _, i := range routes.List {
+			if i.Disabled == "0" {
+				r = append(r, i)
+			}
+		}
+		return &r, nil
+	} else {
+		return &routes.List, nil
+	}
+}
+
+// retrieve routes by network
+func (api *Api) GetRoutesByNetwork(n string, enabled bool) (*[]Route, error) {
+	routes, err := api.GetRoutes(enabled)
+	if err != nil {
+		return nil, err
+	}
+
+	r := []Route{}
+
+	for _, i := range *routes {
+		if i.Network == n {
+			r = append(r, i)
+		}
+	}
+
+	return &r, nil
+}
+
+// retrieve routes by network
+func (api *Api) GetRoutesByNetworkWithDescription(n, d string, enabled bool) (*[]Route, error) {
+	routes, err := api.GetRoutes(enabled)
+	if err != nil {
+		return nil, err
+	}
+
+	r := []Route{}
+
+	for _, i := range *routes {
+		if i.Network == n && i.Description == d {
+			r = append(r, i)
+		}
+	}
+
+	return &r, nil
+}
+
+// retrieve routes by destination
+func (api *Api) GetRoutesByDescription(d string, enabled bool) (*[]Route, error) {
+	routes, err := api.GetRoutes(enabled)
+	if err != nil {
+		return nil, err
+	}
+
+	r := []Route{}
+	for _, i := range *routes {
+		if i.Description == d {
+			r = append(r, i)
+		}
+	}
+
+	return &r, nil
 }
 
 // retrieve a single route using its uuid
-func (api *Api) GetRouteByUuid(uuid string) (*Route, error) {
+func (api *Api) GetRouteByUuid(u string) (*Route, error) {
+	_, err := uuid.Parse(u)
+	if err != nil {
+		return nil, errors.New("route id invalid")
+	}
+
 	// set http headers for request
 	headers := make(map[string]interface{})
 	headers["Content-Type"] = "application/json; charset=UTF-8"
 	api.HttpHeaders(headers)
 
 	// make sure the path is clean
-	uuid = url.PathEscape(uuid)
+	u = url.PathEscape(u)
 	// perform the api request
 	b, err := api.Do("GET", "/routes/routes/searchroute", nil)
 	if err != nil {
@@ -80,7 +150,7 @@ func (api *Api) GetRouteByUuid(uuid string) (*Route, error) {
 
 	// create an empty list of routes
 	// unmarshal the bytes into the route list
-	routes := routes{}
+	routes := Routes{}
 
 	err = json.Unmarshal(b, &routes)
 	if err != nil {
@@ -90,8 +160,8 @@ func (api *Api) GetRouteByUuid(uuid string) (*Route, error) {
 	// pull the route from the route list using the uuid given
 	// we're assuming that the uuid is unique
 	route := Route{}
-	for _, i := range routes.Rows {
-		if i.UUID == uuid {
+	for _, i := range routes.List {
+		if i.UUID == u {
 			route = i
 		}
 	}
@@ -100,15 +170,20 @@ func (api *Api) GetRouteByUuid(uuid string) (*Route, error) {
 }
 
 // delete a route using the uuid
-func (api *Api) DeleteRoute(uuid string) error {
+func (api *Api) DeleteRoute(u string) error {
+	_, err := uuid.Parse(u)
+	if err != nil {
+		return errors.New("route id invalid")
+	}
+
 	// set http headers for request
 	headers := make(map[string]interface{})
 	headers["Content-Type"] = "application/json; charset=UTF-8"
 	api.HttpHeaders(headers)
 
 	// clean up the uuid before submitting
-	uuid = url.PathEscape(uuid)
-	b, err := api.Do("POST", "/routes/routes/delroute/"+uuid, nil)
+	u = url.PathEscape(u)
+	b, err := api.Do("POST", "/routes/routes/delroute/"+u, nil)
 	if err != nil {
 		return err
 	}
