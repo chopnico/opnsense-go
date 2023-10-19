@@ -25,6 +25,12 @@ func NewCommands(app *cli.App) {
 			Usage:       "interact with routes",
 			Subcommands: routesCommands(app),
 		},
+		&cli.Command{
+			Name:        "interfaces",
+			Aliases:     []string{"i"},
+			Usage:       "interact with interfaces",
+			Subcommands: interfacesCommands(app),
+		},
 	)
 }
 
@@ -56,9 +62,16 @@ func firmwareCommands(app *cli.App) []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands,
-		firmwareInfo(app),
-		firmwareStatus(app),
-		firmwareRunning(app),
+		&cli.Command{
+			Name:    "show",
+			Aliases: []string{"s"},
+			Usage:   "show firmware information",
+			Subcommands: []*cli.Command{
+				firmwareShowInfo(app),
+				firmwareShowStatus(app),
+				firmwareShowRunning(app),
+			},
+		},
 	)
 
 	return commands
@@ -68,10 +81,31 @@ func routesCommands(app *cli.App) []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands,
-		listRoutes(app),
-		getRoute(app),
-		setRoute(app),
-		deleteRoute(app),
+		routesList(app),
+		routesGet(app),
+		routesSet(app),
+		routesDelete(app),
+	)
+
+	return commands
+}
+
+func interfacesCommands(app *cli.App) []*cli.Command {
+	var commands []*cli.Command
+
+	commands = append(commands,
+		&cli.Command{
+			Name:    "show",
+			Aliases: []string{"s"},
+			Usage:   "show interface information",
+			Subcommands: []*cli.Command{
+				interfacesShowRoutes(app),
+				interfacesShowArp(app),
+				interfacesShowBpfStatistics(app),
+				interfacesShowStatistics(app),
+			},
+		},
+		interfacesList(app),
 	)
 
 	return commands

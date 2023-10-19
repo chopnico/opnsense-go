@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func firmwareInfo(app *cli.App) *cli.Command {
+func firmwareShowInfo(app *cli.App) *cli.Command {
 	flags := globalFlags(nil)
 
 	return &cli.Command{
@@ -35,7 +35,7 @@ func firmwareInfo(app *cli.App) *cli.Command {
 	}
 }
 
-func firmwareStatus(app *cli.App) *cli.Command {
+func firmwareShowStatus(app *cli.App) *cli.Command {
 	flags := globalFlags(nil)
 
 	return &cli.Command{
@@ -65,7 +65,7 @@ func firmwareStatus(app *cli.App) *cli.Command {
 	}
 }
 
-func firmwareRunning(app *cli.App) *cli.Command {
+func firmwareShowRunning(app *cli.App) *cli.Command {
 	flags := globalFlags(nil)
 
 	return &cli.Command{

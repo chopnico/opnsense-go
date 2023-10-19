@@ -11,14 +11,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func deleteRoute(app *cli.App) *cli.Command {
+func routesDelete(app *cli.App) *cli.Command {
 	flags := []cli.Flag{}
 
 	return &cli.Command{
 		Name:      "delete",
 		Usage:     "delete route",
-		ArgsUsage: "UUID",
 		Aliases:   []string{"d"},
+		ArgsUsage: "UUID",
 		Flags:     flags,
 		Action: func(c *cli.Context) error {
 			if c.Args().Len() == 0 {
@@ -40,7 +40,7 @@ func deleteRoute(app *cli.App) *cli.Command {
 	}
 }
 
-func setRoute(app *cli.App) *cli.Command {
+func routesSet(app *cli.App) *cli.Command {
 	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:     "destination",
@@ -108,7 +108,7 @@ func setRoute(app *cli.App) *cli.Command {
 	}
 }
 
-func getRoute(app *cli.App) *cli.Command {
+func routesGet(app *cli.App) *cli.Command {
 	flags := globalFlags(nil)
 
 	return &cli.Command{
@@ -148,7 +148,7 @@ func getRoute(app *cli.App) *cli.Command {
 	}
 }
 
-func listRoutes(app *cli.App) *cli.Command {
+func routesList(app *cli.App) *cli.Command {
 	flags := addQuietFlag(globalFlags(
 		[]cli.Flag{
 			&cli.StringFlag{
